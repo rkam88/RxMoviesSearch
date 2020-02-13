@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">Movies Search</string>
+    <string name="enter_film_name">Введите название фильма</string>
+    <string name="error_message">Такой фильм найти не узалось или результатов слишком много!</string>
+    <string name="network_error_message">Ошибка при выполнении запроса!\nПроверьте Ваше соединение с сетью.</string>
+    <string name="other_error_message">При выполнении запроса произошла ошибка!</string>
+    <string name="movie_title">%s (%s)"</string>
+    <string name="favorites">Избранное</string>
+    <string name="no_movies_in_favorites">У Вас нет фильмов в Избранном!</string>
+    <string name="yes">Да</string>
+    <string name="no">Нет</string>
+    <string name="delete_from_favorites">Вы уверены, что хотите удалить фильм из Избранного?</string>
+
+</resources>

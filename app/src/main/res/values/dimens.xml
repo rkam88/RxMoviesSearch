@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="default_padding">16dp</dimen>
+    <dimen name="default_margin">8dp</dimen>
+    <dimen name="double_margin">16dp</dimen>
+    <dimen name="favorites_star_size">48dp</dimen>
+    <dimen name="no_margin">0dp</dimen>
+</resources>
