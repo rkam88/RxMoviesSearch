@@ -4,16 +4,18 @@ import androidx.annotation.NonNull;
 
 import net.rusnet.rxmoviessearch.commons.domain.usecase.ChangeMovieFavoriteStatus;
 import net.rusnet.rxmoviessearch.commons.domain.usecase.LoadFavorites;
-import net.rusnet.rxmoviessearch.commons.domain.usecase.UseCase;
+import net.rusnet.rxmoviessearch.search.data.source.OmdbApiException;
 import net.rusnet.rxmoviessearch.search.domain.model.Movie;
 import net.rusnet.rxmoviessearch.search.domain.model.SearchResult;
-import net.rusnet.rxmoviessearch.search.domain.model.SearchResultStatus;
 import net.rusnet.rxmoviessearch.search.domain.usecase.LoadResultsPage;
 import net.rusnet.rxmoviessearch.search.domain.usecase.LoadResultsPageRequestValues;
 import net.rusnet.rxmoviessearch.search.domain.usecase.PerformSearch;
 
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.List;
+
+import io.reactivex.observers.DisposableObserver;
 
 public class SearchPresenter implements SearchContract.Presenter {
 
@@ -42,53 +44,70 @@ public class SearchPresenter implements SearchContract.Presenter {
     public void performSearch(@NonNull final String searchQuery) {
         showSearchProgressBarInView();
         mPerformSearch.execute(searchQuery,
-                new UseCase.Callback<SearchResult>() {
+                new DisposableObserver<SearchResult>() {
                     @Override
-                    public void onResult(@NonNull SearchResult result) {
+                    public void onNext(SearchResult searchResult) {
+                        showMovies(searchResult.getMovieList(),
+                                searchQuery,
+                                searchResult.getTotalResults());
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        showErrorMessage(e);
                         hideSearchProgressBarInView();
-                        switch (result.getSearchResultStatus()) {
-                            case SUCCESSFUL:
-                                showMovies(result.getMovieList(),
-                                        searchQuery,
-                                        result.getTotalResults());
-                                break;
-                            case ERROR_REQUEST:
-                            case ERROR_NETWORK:
-                            case ERROR_OTHER:
-                                showErrorMessage(result.getSearchResultStatus());
-                                break;
-                        }
+                        dispose();
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        hideSearchProgressBarInView();
+                        dispose();
+                    }
+                });
+    }
+
+    @Override
+    public void loadResultsPage(int pageToLoad, @NonNull String searchQuery) {
+        mLoadResultsPage.execute(
+                new LoadResultsPageRequestValues(pageToLoad, searchQuery),
+                new DisposableObserver<SearchResult>() {
+                    @Override
+                    public void onNext(SearchResult searchResult) {
+                        updateMovies(searchResult.getMovieList());
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        showErrorMessage(e);
+                        hideLoadMoreProgressBarInView();
+                        dispose();
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        dispose();
                     }
                 }
         );
     }
 
     @Override
-    public void loadResultsPage(int pageToLoad, @NonNull String searchQuery) {
-        mLoadResultsPage.execute(new LoadResultsPageRequestValues(pageToLoad, searchQuery),
-                new UseCase.Callback<SearchResult>() {
-                    @Override
-                    public void onResult(@NonNull SearchResult result) {
-                        switch (result.getSearchResultStatus()) {
-                            case SUCCESSFUL:
-                                updateMovies(result.getMovieList());
-                                break;
-                            case ERROR_REQUEST:
-                            case ERROR_NETWORK:
-                            case ERROR_OTHER:
-                                showErrorMessage(result.getSearchResultStatus());
-                                hideLoadMoreProgressBarInView();
-                                break;
-                        }
-                    }
-                });
-    }
-
-    @Override
     public void changeMovieFavoriteStatus(@NonNull Movie movie) {
-        mChangeMovieFavoriteStatus.execute(movie, new UseCase.Callback<Void>() {
+        mChangeMovieFavoriteStatus.execute(movie, new DisposableObserver<Void>() {
             @Override
-            public void onResult(@NonNull Void result) {
+            public void onNext(Void aVoid) {
+
+            }
+
+            @Override
+            public void onError(Throwable e) {
+
+            }
+
+            @Override
+            public void onComplete() {
+                dispose();
                 loadFavoriteMovies();
             }
         });
@@ -96,13 +115,23 @@ public class SearchPresenter implements SearchContract.Presenter {
 
     @Override
     public void loadFavoriteMovies() {
-        mLoadFavorites.execute(null, new UseCase.Callback<List<Movie>>() {
+        mLoadFavorites.execute(null, new DisposableObserver<List<Movie>>() {
             @Override
-            public void onResult(@NonNull List<Movie> result) {
+            public void onNext(List<Movie> movies) {
                 SearchContract.View view = mSearchViewWeakReference.get();
                 if (view != null) {
-                    view.updateFavoriteMovies(result);
+                    view.updateFavoriteMovies(movies);
                 }
+            }
+
+            @Override
+            public void onError(Throwable e) {
+
+            }
+
+            @Override
+            public void onComplete() {
+                dispose();
             }
         });
     }
@@ -123,20 +152,15 @@ public class SearchPresenter implements SearchContract.Presenter {
         }
     }
 
-    private void showErrorMessage(@NonNull SearchResultStatus searchResultStatus) {
+    private void showErrorMessage(@NonNull Throwable e) {
         SearchContract.View view = mSearchViewWeakReference.get();
-        if (view != null) {
-            switch (searchResultStatus) {
-                case ERROR_REQUEST:
-                    view.showRequestErrorMessage();
-                    break;
-                case ERROR_NETWORK:
-                    view.showNetworkErrorMessage();
-                    break;
-                case ERROR_OTHER:
-                    view.showOtherErrorMessage();
-                    break;
-            }
+
+        if (e instanceof IOException) {
+            view.showNetworkErrorMessage();
+        } else if (e instanceof OmdbApiException) {
+            view.showRequestErrorMessage();
+        } else {
+            view.showOtherErrorMessage();
         }
     }
 

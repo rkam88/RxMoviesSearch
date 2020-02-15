@@ -3,11 +3,36 @@ package net.rusnet.rxmoviessearch.commons.domain.usecase;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-public abstract class UseCase<Q, R> {
+import io.reactivex.Observable;
+import io.reactivex.Scheduler;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.observers.DisposableObserver;
 
-    public abstract void execute(@Nullable final Q requestValues, @NonNull Callback<R> callback);
+public abstract class UseCase<R, T> {
 
-    public interface Callback<R> {
-        void onResult(@NonNull R result);
+    private Scheduler mMainThreadScheduler;
+    private Scheduler mWorkerThreadScheduler;
+    private CompositeDisposable mDisposables;
+
+    public UseCase(@NonNull Scheduler mainThreadScheduler,
+                   @NonNull Scheduler workerThreadScheduler) {
+        mMainThreadScheduler = mainThreadScheduler;
+        mWorkerThreadScheduler = workerThreadScheduler;
+        mDisposables = new CompositeDisposable();
     }
+
+    @NonNull
+    protected abstract Observable<T> buildUseCaseObservable(@Nullable R requestValues);
+
+    public void execute(@Nullable R requestValues, @NonNull DisposableObserver<T> observer) {
+        mDisposables.add(buildUseCaseObservable(requestValues)
+                .subscribeOn(mWorkerThreadScheduler)
+                .observeOn(mMainThreadScheduler)
+                .subscribeWith(observer));
+    }
+
+    public void dispose() {
+        mDisposables.dispose();
+    }
+
 }

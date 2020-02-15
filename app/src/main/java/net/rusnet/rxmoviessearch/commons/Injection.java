@@ -6,11 +6,8 @@ import androidx.annotation.NonNull;
 
 import net.rusnet.rxmoviessearch.commons.data.source.MoviesDatabase;
 import net.rusnet.rxmoviessearch.commons.data.source.MoviesLocalDataSource;
-import net.rusnet.rxmoviessearch.commons.domain.usecase.AsyncUseCaseExecutor;
 import net.rusnet.rxmoviessearch.commons.domain.usecase.ChangeMovieFavoriteStatus;
 import net.rusnet.rxmoviessearch.commons.domain.usecase.LoadFavorites;
-import net.rusnet.rxmoviessearch.commons.utils.executors.DiskIOThreadExecutor;
-import net.rusnet.rxmoviessearch.commons.utils.executors.MainThreadExecutor;
 import net.rusnet.rxmoviessearch.favorites.presentation.FavoritesContract;
 import net.rusnet.rxmoviessearch.favorites.presentation.FavoritesPresenter;
 import net.rusnet.rxmoviessearch.search.data.source.MoviesRemoteDataSource;
@@ -20,7 +17,11 @@ import net.rusnet.rxmoviessearch.search.domain.usecase.PerformSearch;
 import net.rusnet.rxmoviessearch.search.presentation.SearchContract;
 import net.rusnet.rxmoviessearch.search.presentation.SearchPresenter;
 
+import io.reactivex.Scheduler;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 import retrofit2.Retrofit;
+import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 
@@ -28,9 +29,8 @@ public class Injection {
 
     private static final String BASE_URL = "http://omdbapi.com/";
 
-    private static MainThreadExecutor MAIN_THREAD_EXECUTOR_INSTANCE;
-    private static DiskIOThreadExecutor DISK_IO_THREAD_EXECUTOR_INSTANCE;
-    private static AsyncUseCaseExecutor ASYNC_USE_CASE_EXECUTOR_INSTANCE;
+    private static Scheduler MAIN_THREAD_SCHEDULER_INSTANCE;
+    private static Scheduler WORKER_THREAD_SCHEDULER_INSTANCE;
     private static MoviesLocalDataSource MOVIES_LOCAL_DATA_SOURCE_INSTANCE;
     private static ChangeMovieFavoriteStatus CHANGE_MOVIE_FAVORITE_STATUS_INSTANCE;
     private static LoadFavorites LOAD_FAVORITES_INSTANCE;
@@ -41,28 +41,18 @@ public class Injection {
     private static SearchContract.Presenter SEARCH_PRESENTER_INSTANCE;
     private static FavoritesContract.Presenter FAVORITES_PRESENTER_INSTANCE;
 
-    public static MainThreadExecutor provideMainThreadExecutor() {
-        if (MAIN_THREAD_EXECUTOR_INSTANCE == null) {
-            MAIN_THREAD_EXECUTOR_INSTANCE = new MainThreadExecutor();
+    public static Scheduler provideMainThreadScheduler() {
+        if (MAIN_THREAD_SCHEDULER_INSTANCE == null) {
+            MAIN_THREAD_SCHEDULER_INSTANCE = AndroidSchedulers.mainThread();
         }
-        return MAIN_THREAD_EXECUTOR_INSTANCE;
+        return MAIN_THREAD_SCHEDULER_INSTANCE;
     }
 
-    public static DiskIOThreadExecutor provideDiskIOThreadExecutor() {
-        if (DISK_IO_THREAD_EXECUTOR_INSTANCE == null) {
-            DISK_IO_THREAD_EXECUTOR_INSTANCE = new DiskIOThreadExecutor();
+    public static Scheduler provideWorkerThreadScheduler() {
+        if (WORKER_THREAD_SCHEDULER_INSTANCE == null) {
+            WORKER_THREAD_SCHEDULER_INSTANCE = Schedulers.io();
         }
-        return DISK_IO_THREAD_EXECUTOR_INSTANCE;
-    }
-
-    public static AsyncUseCaseExecutor provideAsyncUseCaseExecutor() {
-        if (ASYNC_USE_CASE_EXECUTOR_INSTANCE == null) {
-            ASYNC_USE_CASE_EXECUTOR_INSTANCE = new AsyncUseCaseExecutor(
-                    provideMainThreadExecutor(),
-                    provideDiskIOThreadExecutor()
-            );
-        }
-        return ASYNC_USE_CASE_EXECUTOR_INSTANCE;
+        return WORKER_THREAD_SCHEDULER_INSTANCE;
     }
 
     public static MoviesLocalDataSource provideMoviesLocalDataSource(@NonNull Context context) {
@@ -76,7 +66,8 @@ public class Injection {
     public static ChangeMovieFavoriteStatus provideChangeMovieFavoriteStatusUseCase(@NonNull Context context) {
         if (CHANGE_MOVIE_FAVORITE_STATUS_INSTANCE == null) {
             CHANGE_MOVIE_FAVORITE_STATUS_INSTANCE = new ChangeMovieFavoriteStatus(
-                    provideAsyncUseCaseExecutor(),
+                    provideMainThreadScheduler(),
+                    provideWorkerThreadScheduler(),
                     provideMoviesLocalDataSource(context.getApplicationContext()));
         }
         return CHANGE_MOVIE_FAVORITE_STATUS_INSTANCE;
@@ -85,7 +76,8 @@ public class Injection {
     public static LoadFavorites provideLoadFavoritesUseCase(@NonNull Context context) {
         if (LOAD_FAVORITES_INSTANCE == null) {
             LOAD_FAVORITES_INSTANCE = new LoadFavorites(
-                    provideAsyncUseCaseExecutor(),
+                    provideMainThreadScheduler(),
+                    provideWorkerThreadScheduler(),
                     provideMoviesLocalDataSource(context.getApplicationContext()));
         }
         return LOAD_FAVORITES_INSTANCE;
@@ -96,6 +88,7 @@ public class Injection {
             Retrofit retrofit = new Retrofit.Builder()
                     .baseUrl(BASE_URL)
                     .addConverterFactory(GsonConverterFactory.create())
+                    .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                     .build();
             OMDB_API_INSTANCE = retrofit.create(OmdbApi.class);
         }
@@ -114,6 +107,8 @@ public class Injection {
     public static PerformSearch providePerformSearchUseCase() {
         if (PERFORM_SEARCH_INSTANCE == null) {
             PERFORM_SEARCH_INSTANCE = new PerformSearch(
+                    provideMainThreadScheduler(),
+                    provideWorkerThreadScheduler(),
                     provideMoviesRemoteDataSource()
             );
         }
@@ -123,6 +118,8 @@ public class Injection {
     public static LoadResultsPage provideLoadResultsPageUseCase() {
         if (LOAD_RESULTS_PAGE_INSTANCE == null) {
             LOAD_RESULTS_PAGE_INSTANCE = new LoadResultsPage(
+                    provideMainThreadScheduler(),
+                    provideWorkerThreadScheduler(),
                     provideMoviesRemoteDataSource()
             );
         }

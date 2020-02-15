@@ -6,15 +6,14 @@ import net.rusnet.rxmoviessearch.search.data.model.OMDbMovie;
 import net.rusnet.rxmoviessearch.search.data.model.OMDbSearchResponse;
 import net.rusnet.rxmoviessearch.search.domain.model.Movie;
 import net.rusnet.rxmoviessearch.search.domain.model.SearchResult;
-import net.rusnet.rxmoviessearch.search.domain.model.SearchResultStatus;
 
-import java.io.IOException;
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
+import io.reactivex.Observable;
+import io.reactivex.functions.Function;
 
 public class MoviesRemoteDataSource implements IMoviesRemoteDataSource {
 
@@ -27,88 +26,43 @@ public class MoviesRemoteDataSource implements IMoviesRemoteDataSource {
         mOmdbApi = omdbApi;
     }
 
+    @NonNull
     @Override
-    public void performSearch(@NonNull String query, @NonNull final onSearchResultCallback callback) {
-        Call<OMDbSearchResponse> call = mOmdbApi.getResults(query, API_KEY);
-        call.enqueue(new Callback<OMDbSearchResponse>() {
-            @Override
-            public void onResponse(Call<OMDbSearchResponse> call,
-                                   Response<OMDbSearchResponse> response) {
-                sendResultOnResponse(response, callback);
-            }
-
-            @Override
-            public void onFailure(Call<OMDbSearchResponse> call,
-                                  Throwable t) {
-                sendResultOnFailure(t, callback);
-            }
-        });
+    public Observable<SearchResult> performSearch(@NonNull String query) {
+        return mOmdbApi.getResults(query, API_KEY)
+                .map(getMapper());
     }
 
+    @NonNull
     @Override
-    public void getPage(@NonNull String query, int pageToLoad, @NonNull final onSearchResultCallback callback) {
-        Call<OMDbSearchResponse> call = mOmdbApi.getPageResults(query, pageToLoad, API_KEY);
+    public Observable<SearchResult> getPage(@NonNull String query, int pageToLoad) {
+        return mOmdbApi.getPageResults(query, pageToLoad, API_KEY)
+                .map(getMapper());
+    }
 
-        call.enqueue(new Callback<OMDbSearchResponse>() {
+    @NotNull
+    private Function<OMDbSearchResponse, SearchResult> getMapper() {
+        return new Function<OMDbSearchResponse, SearchResult>() {
             @Override
-            public void onResponse(Call<OMDbSearchResponse> call, Response<OMDbSearchResponse> response) {
-                sendResultOnResponse(response, callback);
+            public SearchResult apply(OMDbSearchResponse response) throws Exception {
+                if (response.getOMDbMovies() == null) throw new OmdbApiException();
+
+                List<Movie> movieList = new ArrayList<>();
+                for (OMDbMovie omDbMovie : response.getOMDbMovies()) {
+                    Movie movie = new Movie(
+                            omDbMovie.getTitle(),
+                            omDbMovie.getYear(),
+                            (omDbMovie.getPoster().equals(NO_POSTER) ? EMPTY_STRING : omDbMovie.getPoster()),
+                            omDbMovie.getImdbID(),
+                            false
+                    );
+                    movieList.add(movie);
+                }
+
+                return new SearchResult(
+                        Long.parseLong(response.getTotalResults()),
+                        movieList);
             }
-
-            @Override
-            public void onFailure(Call<OMDbSearchResponse> call, Throwable t) {
-                sendResultOnFailure(t, callback);
-            }
-        });
+        };
     }
-
-    private void sendResultOnResponse(Response<OMDbSearchResponse> response, @NonNull onSearchResultCallback callback) {
-        SearchResult searchResult;
-
-        if (response.isSuccessful() &&
-                response.body() != null &&
-                response.body().getOMDbMovies() != null) {
-            List<OMDbMovie> omDbMovies = response.body().getOMDbMovies();
-            List<Movie> movieList = new ArrayList<>();
-
-            for (OMDbMovie omDbMovie : omDbMovies) {
-                Movie movie = new Movie(
-                        omDbMovie.getTitle(),
-                        omDbMovie.getYear(),
-                        (omDbMovie.getPoster().equals(NO_POSTER) ? EMPTY_STRING : omDbMovie.getPoster()),
-                        omDbMovie.getImdbID(),
-                        false
-                );
-                movieList.add(movie);
-            }
-
-            String totalResultsAsString = response.body().getTotalResults();
-
-            searchResult = new SearchResult(
-                    SearchResultStatus.SUCCESSFUL,
-                    Long.parseLong(totalResultsAsString),
-                    movieList);
-        } else {
-            searchResult = new SearchResult(
-                    SearchResultStatus.ERROR_REQUEST,
-                    0,
-                    null);
-        }
-        callback.onResult(searchResult);
-    }
-
-    private void sendResultOnFailure(Throwable t, @NonNull onSearchResultCallback callback) {
-        if (t instanceof IOException) {
-            callback.onResult(new SearchResult(
-                    SearchResultStatus.ERROR_NETWORK,
-                    0,
-                    null));
-        } else {
-            callback.onResult(new SearchResult(
-                    SearchResultStatus.ERROR_OTHER,
-                    0,
-                    null));
-        }
-    }
-
 }

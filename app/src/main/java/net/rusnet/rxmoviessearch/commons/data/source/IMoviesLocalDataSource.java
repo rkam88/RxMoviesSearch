@@ -6,13 +6,18 @@ import net.rusnet.rxmoviessearch.search.domain.model.Movie;
 
 import java.util.List;
 
+import io.reactivex.Completable;
+import io.reactivex.Observable;
+
 public interface IMoviesLocalDataSource {
 
     @NonNull
-    List<Movie> getAllMovies();
+    Observable<List<Movie>> getAllMovies();
 
-    void addMovie(@NonNull Movie movie);
+    @NonNull
+    Completable addMovie(@NonNull Movie movie);
 
-    void deleteMovie(@NonNull String imdbId);
+    @NonNull
+    Completable deleteMovie(@NonNull String imdbId);
 
 }

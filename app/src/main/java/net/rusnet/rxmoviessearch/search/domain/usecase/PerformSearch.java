@@ -3,27 +3,27 @@ package net.rusnet.rxmoviessearch.search.domain.usecase;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import net.rusnet.rxmoviessearch.commons.domain.usecase.UseCase;
+import net.rusnet.rxmoviessearch.commons.domain.usecase.RemoteDataSourceUseCase;
 import net.rusnet.rxmoviessearch.search.data.source.IMoviesRemoteDataSource;
 import net.rusnet.rxmoviessearch.search.domain.model.SearchResult;
 
-public class PerformSearch extends UseCase<String, SearchResult> {
+import io.reactivex.Observable;
+import io.reactivex.Scheduler;
 
-    private IMoviesRemoteDataSource mMoviesRemoteDataSource;
+public class PerformSearch extends RemoteDataSourceUseCase<String, SearchResult> {
 
-    public PerformSearch(@NonNull IMoviesRemoteDataSource moviesRemoteDataSource) {
-        mMoviesRemoteDataSource = moviesRemoteDataSource;
+    public PerformSearch(
+            @NonNull Scheduler mainThreadScheduler,
+            @NonNull Scheduler workerThreadScheduler,
+            @NonNull IMoviesRemoteDataSource moviesLocalDataSource) {
+        super(mainThreadScheduler, workerThreadScheduler, moviesLocalDataSource);
     }
 
+    @NonNull
     @Override
-    public void execute(@Nullable String requestValues, @NonNull final Callback<SearchResult> callback) {
+    protected Observable<SearchResult> buildUseCaseObservable(
+            @Nullable String requestValues) {
         if (requestValues == null) throw new IllegalArgumentException();
-        mMoviesRemoteDataSource.performSearch(requestValues, new IMoviesRemoteDataSource.onSearchResultCallback() {
-            @Override
-            public void onResult(@NonNull SearchResult searchResult) {
-                callback.onResult(searchResult);
-            }
-        });
+        return mMoviesRemoteDataSource.performSearch(requestValues);
     }
-
 }

@@ -3,8 +3,9 @@ package net.rusnet.rxmoviessearch.favorites.presentation;
 import androidx.annotation.NonNull;
 
 import net.rusnet.rxmoviessearch.commons.domain.usecase.ChangeMovieFavoriteStatus;
-import net.rusnet.rxmoviessearch.commons.domain.usecase.UseCase;
 import net.rusnet.rxmoviessearch.search.domain.model.Movie;
+
+import io.reactivex.observers.DisposableObserver;
 
 public class FavoritesPresenter implements FavoritesContract.Presenter {
 
@@ -17,10 +18,20 @@ public class FavoritesPresenter implements FavoritesContract.Presenter {
     @Override
     public void deleteFromFavorites(@NonNull Movie movie) {
         movie.setInFavorites(false);
-        mChangeMovieFavoriteStatus.execute(movie, new UseCase.Callback<Void>() {
+        mChangeMovieFavoriteStatus.execute(movie, new DisposableObserver<Void>() {
             @Override
-            public void onResult(@NonNull Void result) {
+            public void onNext(Void aVoid) {
 
+            }
+
+            @Override
+            public void onError(Throwable e) {
+
+            }
+
+            @Override
+            public void onComplete() {
+                dispose();
             }
         });
     }

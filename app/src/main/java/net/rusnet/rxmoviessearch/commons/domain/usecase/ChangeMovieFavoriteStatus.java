@@ -6,21 +6,24 @@ import androidx.annotation.Nullable;
 import net.rusnet.rxmoviessearch.commons.data.source.IMoviesLocalDataSource;
 import net.rusnet.rxmoviessearch.search.domain.model.Movie;
 
+import io.reactivex.Observable;
+import io.reactivex.Scheduler;
+
 public class ChangeMovieFavoriteStatus extends DBUseCase<Movie, Void> {
 
-    public ChangeMovieFavoriteStatus(@NonNull AsyncUseCaseExecutor useCaseExecutor, @NonNull IMoviesLocalDataSource moviesLocalDataSource) {
-        super(useCaseExecutor, moviesLocalDataSource);
+    public ChangeMovieFavoriteStatus(@NonNull Scheduler mainThreadScheduler, @NonNull Scheduler workerThreadScheduler, @NonNull IMoviesLocalDataSource moviesLocalDataSource) {
+        super(mainThreadScheduler, workerThreadScheduler, moviesLocalDataSource);
     }
 
     @NonNull
     @Override
-    protected Void doInBackground(@Nullable Movie requestValues) {
-        if (requestValues == null) return null;
+    protected Observable<Void> buildUseCaseObservable(@Nullable Movie requestValues) {
+        if (requestValues == null) throw new IllegalArgumentException();
         if (requestValues.isInFavorites()) {
-            mMoviesLocalDataSource.addMovie(requestValues);
+            return mMoviesLocalDataSource.addMovie(requestValues).toObservable();
         } else {
-            mMoviesLocalDataSource.deleteMovie(requestValues.getImdbID());
+            return mMoviesLocalDataSource.deleteMovie(requestValues.getImdbID()).toObservable();
         }
-        return null;
     }
+
 }

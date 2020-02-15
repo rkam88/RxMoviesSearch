@@ -1,38 +1,26 @@
 package net.rusnet.rxmoviessearch.search.domain.model;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import java.util.List;
 
 public class SearchResult {
 
-    @NonNull
-    private final SearchResultStatus mSearchResultStatus;
     private final long mTotalResults;
-    @Nullable
+    @NonNull
     private final List<Movie> mMovieList;
 
-    public SearchResult(@NonNull SearchResultStatus searchResultStatus,
-                        long totalResults,
-                        @Nullable List<Movie> movieList) {
-        if (searchResultStatus == SearchResultStatus.SUCCESSFUL && movieList == null)
-            throw new IllegalArgumentException();
-        mSearchResultStatus = searchResultStatus;
+    public SearchResult(long totalResults,
+                        @NonNull List<Movie> movieList) {
         mTotalResults = totalResults;
         mMovieList = movieList;
-    }
-
-    @NonNull
-    public SearchResultStatus getSearchResultStatus() {
-        return mSearchResultStatus;
     }
 
     public long getTotalResults() {
         return mTotalResults;
     }
 
-    @Nullable
+    @NonNull
     public List<Movie> getMovieList() {
         return mMovieList;
     }
