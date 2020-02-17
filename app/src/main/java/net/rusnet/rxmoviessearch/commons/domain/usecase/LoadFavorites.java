@@ -8,20 +8,17 @@ import net.rusnet.rxmoviessearch.search.domain.model.Movie;
 
 import java.util.List;
 
-import io.reactivex.Observable;
-import io.reactivex.Scheduler;
+import io.reactivex.Single;
 
-public class LoadFavorites extends DBUseCase<Void, List<Movie>> {
+public class LoadFavorites extends DBUseCase<Void, Single<List<Movie>>> {
 
-    public LoadFavorites(@NonNull Scheduler mainThreadScheduler,
-                         @NonNull Scheduler workerThreadScheduler,
-                         @NonNull IMoviesLocalDataSource moviesLocalDataSource) {
-        super(mainThreadScheduler, workerThreadScheduler, moviesLocalDataSource);
+    public LoadFavorites(@NonNull IMoviesLocalDataSource moviesLocalDataSource) {
+        super(moviesLocalDataSource);
     }
 
     @NonNull
     @Override
-    protected Observable<List<Movie>> buildUseCaseObservable(@Nullable Void requestValues) {
+    public Single<List<Movie>> buildUseCaseObservable(@Nullable Void aVoid) {
         return mMoviesLocalDataSource.getAllMovies();
     }
 

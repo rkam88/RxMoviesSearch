@@ -4,18 +4,13 @@ import androidx.annotation.NonNull;
 
 import net.rusnet.rxmoviessearch.search.data.source.IMoviesRemoteDataSource;
 
-import io.reactivex.Scheduler;
-
-public abstract class RemoteDataSourceUseCase<R, T> extends UseCase<R, T> {
+public abstract class RemoteDataSourceUseCase<V, T> implements UseCase<V, T> {
 
     protected IMoviesRemoteDataSource mMoviesRemoteDataSource;
 
     public RemoteDataSourceUseCase(
-            @NonNull Scheduler mainThreadScheduler,
-            @NonNull Scheduler workerThreadScheduler,
-            @NonNull IMoviesRemoteDataSource moviesLocalDataSource) {
-        super(mainThreadScheduler, workerThreadScheduler);
-        mMoviesRemoteDataSource = moviesLocalDataSource;
+            @NonNull IMoviesRemoteDataSource moviesRemoteDataSource) {
+        mMoviesRemoteDataSource = moviesRemoteDataSource;
     }
 
 }

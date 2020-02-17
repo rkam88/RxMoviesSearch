@@ -4,16 +4,12 @@ import androidx.annotation.NonNull;
 
 import net.rusnet.rxmoviessearch.commons.data.source.IMoviesLocalDataSource;
 
-import io.reactivex.Scheduler;
-
-public abstract class DBUseCase<R, T> extends UseCase<R, T> {
+public abstract class DBUseCase<V, T> implements UseCase<V, T> {
 
     protected IMoviesLocalDataSource mMoviesLocalDataSource;
 
-    public DBUseCase(@NonNull Scheduler mainThreadScheduler,
-                     @NonNull Scheduler workerThreadScheduler,
-                     @NonNull IMoviesLocalDataSource moviesLocalDataSource) {
-        super(mainThreadScheduler, workerThreadScheduler);
+    public DBUseCase(
+            @NonNull IMoviesLocalDataSource moviesLocalDataSource) {
         mMoviesLocalDataSource = moviesLocalDataSource;
     }
 

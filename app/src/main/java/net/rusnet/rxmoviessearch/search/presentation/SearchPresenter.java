@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 
 import net.rusnet.rxmoviessearch.commons.domain.usecase.ChangeMovieFavoriteStatus;
 import net.rusnet.rxmoviessearch.commons.domain.usecase.LoadFavorites;
+import net.rusnet.rxmoviessearch.commons.domain.usecase.UseCaseHandler;
 import net.rusnet.rxmoviessearch.search.data.source.OmdbApiException;
 import net.rusnet.rxmoviessearch.search.domain.model.Movie;
 import net.rusnet.rxmoviessearch.search.domain.model.SearchResult;
@@ -15,21 +16,26 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.List;
 
-import io.reactivex.observers.DisposableObserver;
+import io.reactivex.observers.DisposableCompletableObserver;
+import io.reactivex.observers.DisposableSingleObserver;
 
 public class SearchPresenter implements SearchContract.Presenter {
 
     private WeakReference<SearchContract.View> mSearchViewWeakReference;
+    private UseCaseHandler mUseCaseHandler;
     private PerformSearch mPerformSearch;
     private LoadResultsPage mLoadResultsPage;
     private ChangeMovieFavoriteStatus mChangeMovieFavoriteStatus;
     private LoadFavorites mLoadFavorites;
 
-    public SearchPresenter(@NonNull PerformSearch performSearch,
-                           @NonNull LoadResultsPage loadResultsPage,
-                           ChangeMovieFavoriteStatus changeMovieFavoriteStatus,
-                           LoadFavorites loadFavorites) {
+    public SearchPresenter(
+            @NonNull UseCaseHandler useCaseHandler,
+            @NonNull PerformSearch performSearch,
+            @NonNull LoadResultsPage loadResultsPage,
+            @NonNull ChangeMovieFavoriteStatus changeMovieFavoriteStatus,
+            @NonNull LoadFavorites loadFavorites) {
         mPerformSearch = performSearch;
+        mUseCaseHandler = useCaseHandler;
         mLoadResultsPage = loadResultsPage;
         mChangeMovieFavoriteStatus = changeMovieFavoriteStatus;
         mLoadFavorites = loadFavorites;
@@ -43,24 +49,22 @@ public class SearchPresenter implements SearchContract.Presenter {
     @Override
     public void performSearch(@NonNull final String searchQuery) {
         showSearchProgressBarInView();
-        mPerformSearch.execute(searchQuery,
-                new DisposableObserver<SearchResult>() {
+        mUseCaseHandler.execute(
+                mPerformSearch,
+                searchQuery,
+                new DisposableSingleObserver<SearchResult>() {
                     @Override
-                    public void onNext(SearchResult searchResult) {
+                    public void onSuccess(SearchResult searchResult) {
                         showMovies(searchResult.getMovieList(),
                                 searchQuery,
                                 searchResult.getTotalResults());
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        showErrorMessage(e);
                         hideSearchProgressBarInView();
                         dispose();
                     }
 
                     @Override
-                    public void onComplete() {
+                    public void onError(Throwable e) {
+                        showErrorMessage(e);
                         hideSearchProgressBarInView();
                         dispose();
                     }
@@ -69,12 +73,14 @@ public class SearchPresenter implements SearchContract.Presenter {
 
     @Override
     public void loadResultsPage(int pageToLoad, @NonNull String searchQuery) {
-        mLoadResultsPage.execute(
+        mUseCaseHandler.execute(
+                mLoadResultsPage,
                 new LoadResultsPageRequestValues(pageToLoad, searchQuery),
-                new DisposableObserver<SearchResult>() {
+                new DisposableSingleObserver<SearchResult>() {
                     @Override
-                    public void onNext(SearchResult searchResult) {
+                    public void onSuccess(SearchResult searchResult) {
                         updateMovies(searchResult.getMovieList());
+                        dispose();
                     }
 
                     @Override
@@ -83,9 +89,24 @@ public class SearchPresenter implements SearchContract.Presenter {
                         hideLoadMoreProgressBarInView();
                         dispose();
                     }
+                }
+        );
+    }
 
+    @Override
+    public void changeMovieFavoriteStatus(@NonNull Movie movie) {
+        mUseCaseHandler.execute(
+                mChangeMovieFavoriteStatus,
+                movie,
+                new DisposableCompletableObserver() {
                     @Override
                     public void onComplete() {
+                        dispose();
+                        loadFavoriteMovies();
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
                         dispose();
                     }
                 }
@@ -93,47 +114,26 @@ public class SearchPresenter implements SearchContract.Presenter {
     }
 
     @Override
-    public void changeMovieFavoriteStatus(@NonNull Movie movie) {
-        mChangeMovieFavoriteStatus.execute(movie, new DisposableObserver<Void>() {
-            @Override
-            public void onNext(Void aVoid) {
-
-            }
-
-            @Override
-            public void onError(Throwable e) {
-
-            }
-
-            @Override
-            public void onComplete() {
-                dispose();
-                loadFavoriteMovies();
-            }
-        });
-    }
-
-    @Override
     public void loadFavoriteMovies() {
-        mLoadFavorites.execute(null, new DisposableObserver<List<Movie>>() {
-            @Override
-            public void onNext(List<Movie> movies) {
-                SearchContract.View view = mSearchViewWeakReference.get();
-                if (view != null) {
-                    view.updateFavoriteMovies(movies);
+        mUseCaseHandler.execute(
+                mLoadFavorites,
+                null,
+                new DisposableSingleObserver<List<Movie>>() {
+                    @Override
+                    public void onSuccess(List<Movie> movies) {
+                        SearchContract.View view = mSearchViewWeakReference.get();
+                        if (view != null) {
+                            view.updateFavoriteMovies(movies);
+                        }
+                        dispose();
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        dispose();
+                    }
                 }
-            }
-
-            @Override
-            public void onError(Throwable e) {
-
-            }
-
-            @Override
-            public void onComplete() {
-                dispose();
-            }
-        });
+        );
     }
 
     private void showMovies(@NonNull List<Movie> movieList,

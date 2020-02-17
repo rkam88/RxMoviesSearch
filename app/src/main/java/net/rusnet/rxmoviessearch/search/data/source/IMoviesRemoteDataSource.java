@@ -4,16 +4,16 @@ import androidx.annotation.NonNull;
 
 import net.rusnet.rxmoviessearch.search.domain.model.SearchResult;
 
-import io.reactivex.Observable;
+import io.reactivex.Single;
 
 public interface IMoviesRemoteDataSource {
 
     @NonNull
-    Observable<SearchResult> performSearch(
+    Single<SearchResult> performSearch(
             @NonNull String query);
 
     @NonNull
-    Observable<SearchResult> getPage(
+    Single<SearchResult> getPage(
             @NonNull String query,
             int pageToLoad);
 

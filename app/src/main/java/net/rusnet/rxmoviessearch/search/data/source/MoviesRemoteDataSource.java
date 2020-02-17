@@ -12,7 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.reactivex.functions.Function;
 
 public class MoviesRemoteDataSource implements IMoviesRemoteDataSource {
@@ -28,14 +28,14 @@ public class MoviesRemoteDataSource implements IMoviesRemoteDataSource {
 
     @NonNull
     @Override
-    public Observable<SearchResult> performSearch(@NonNull String query) {
+    public Single<SearchResult> performSearch(@NonNull String query) {
         return mOmdbApi.getResults(query, API_KEY)
                 .map(getMapper());
     }
 
     @NonNull
     @Override
-    public Observable<SearchResult> getPage(@NonNull String query, int pageToLoad) {
+    public Single<SearchResult> getPage(@NonNull String query, int pageToLoad) {
         return mOmdbApi.getPageResults(query, pageToLoad, API_KEY)
                 .map(getMapper());
     }

@@ -7,23 +7,19 @@ import net.rusnet.rxmoviessearch.commons.domain.usecase.RemoteDataSourceUseCase;
 import net.rusnet.rxmoviessearch.search.data.source.IMoviesRemoteDataSource;
 import net.rusnet.rxmoviessearch.search.domain.model.SearchResult;
 
-import io.reactivex.Observable;
-import io.reactivex.Scheduler;
+import io.reactivex.Single;
 
-public class PerformSearch extends RemoteDataSourceUseCase<String, SearchResult> {
+public class PerformSearch extends RemoteDataSourceUseCase<String, Single<SearchResult>> {
 
-    public PerformSearch(
-            @NonNull Scheduler mainThreadScheduler,
-            @NonNull Scheduler workerThreadScheduler,
-            @NonNull IMoviesRemoteDataSource moviesLocalDataSource) {
-        super(mainThreadScheduler, workerThreadScheduler, moviesLocalDataSource);
+    public PerformSearch(@NonNull IMoviesRemoteDataSource moviesRemoteDataSource) {
+        super(moviesRemoteDataSource);
     }
 
     @NonNull
     @Override
-    protected Observable<SearchResult> buildUseCaseObservable(
-            @Nullable String requestValues) {
+    public Single<SearchResult> buildUseCaseObservable(@Nullable String requestValues) {
         if (requestValues == null) throw new IllegalArgumentException();
         return mMoviesRemoteDataSource.performSearch(requestValues);
     }
+
 }
