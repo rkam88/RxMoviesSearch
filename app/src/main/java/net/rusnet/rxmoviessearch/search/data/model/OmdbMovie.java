@@ -3,7 +3,7 @@ package net.rusnet.rxmoviessearch.search.data.model;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class OMDbMovie {
+public class OmdbMovie {
 
     @SerializedName("Title")
     @Expose

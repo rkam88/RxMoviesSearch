@@ -2,8 +2,8 @@ package net.rusnet.rxmoviessearch.search.data.source;
 
 import androidx.annotation.NonNull;
 
-import net.rusnet.rxmoviessearch.search.data.model.OMDbMovie;
-import net.rusnet.rxmoviessearch.search.data.model.OMDbSearchResponse;
+import net.rusnet.rxmoviessearch.search.data.model.OmdbMovie;
+import net.rusnet.rxmoviessearch.search.data.model.OmdbSearchResponse;
 import net.rusnet.rxmoviessearch.search.domain.model.Movie;
 import net.rusnet.rxmoviessearch.search.domain.model.SearchResult;
 
@@ -41,19 +41,19 @@ public class MoviesRemoteDataSource implements IMoviesRemoteDataSource {
     }
 
     @NotNull
-    private Function<OMDbSearchResponse, SearchResult> getMapper() {
-        return new Function<OMDbSearchResponse, SearchResult>() {
+    private Function<OmdbSearchResponse, SearchResult> getMapper() {
+        return new Function<OmdbSearchResponse, SearchResult>() {
             @Override
-            public SearchResult apply(OMDbSearchResponse response) throws Exception {
-                if (response.getOMDbMovies() == null) throw new OmdbApiException();
+            public SearchResult apply(OmdbSearchResponse response) throws Exception {
+                if (response.getOmdbMovies() == null) throw new OmdbApiException();
 
                 List<Movie> movieList = new ArrayList<>();
-                for (OMDbMovie omDbMovie : response.getOMDbMovies()) {
+                for (OmdbMovie omdbMovie : response.getOmdbMovies()) {
                     Movie movie = new Movie(
-                            omDbMovie.getTitle(),
-                            omDbMovie.getYear(),
-                            (omDbMovie.getPoster().equals(NO_POSTER) ? EMPTY_STRING : omDbMovie.getPoster()),
-                            omDbMovie.getImdbID(),
+                            omdbMovie.getTitle(),
+                            omdbMovie.getYear(),
+                            (omdbMovie.getPoster().equals(NO_POSTER) ? EMPTY_STRING : omdbMovie.getPoster()),
+                            omdbMovie.getImdbID(),
                             false
                     );
                     movieList.add(movie);

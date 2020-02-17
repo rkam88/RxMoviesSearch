@@ -5,11 +5,11 @@ import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
 
-public class OMDbSearchResponse {
+public class OmdbSearchResponse {
 
     @SerializedName("Search")
     @Expose
-    private List<OMDbMovie> mOMDbMovies = null;
+    private List<OmdbMovie> mOmdbMovies = null;
     @SerializedName("totalResults")
     @Expose
     private String mTotalResults;
@@ -17,12 +17,12 @@ public class OMDbSearchResponse {
     @Expose
     private String mResponse;
 
-    public List<OMDbMovie> getOMDbMovies() {
-        return mOMDbMovies;
+    public List<OmdbMovie> getOmdbMovies() {
+        return mOmdbMovies;
     }
 
-    public void setOMDbMovies(List<OMDbMovie> OMDbMovies) {
-        mOMDbMovies = OMDbMovies;
+    public void setOmdbMovies(List<OmdbMovie> omdbMovies) {
+        mOmdbMovies = omdbMovies;
     }
 
     public String getTotalResults() {
