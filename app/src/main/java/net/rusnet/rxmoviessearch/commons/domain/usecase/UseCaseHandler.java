@@ -4,11 +4,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import io.reactivex.Completable;
+import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.Scheduler;
 import io.reactivex.Single;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.observers.DisposableCompletableObserver;
+import io.reactivex.observers.DisposableMaybeObserver;
 import io.reactivex.observers.DisposableObserver;
 import io.reactivex.observers.DisposableSingleObserver;
 
@@ -40,6 +42,17 @@ public class UseCaseHandler {
             @NonNull UseCase<V, Single<T>> useCase,
             @Nullable V requestValues,
             @NonNull DisposableSingleObserver<T> observer) {
+        return useCase.buildUseCaseObservable(requestValues)
+                .subscribeOn(mWorkerThreadScheduler)
+                .observeOn(mMainThreadScheduler)
+                .subscribeWith(observer);
+    }
+
+    @NonNull
+    public <V, T> Disposable execute(
+            @NonNull UseCase<V, Maybe<T>> useCase,
+            @Nullable V requestValues,
+            @NonNull DisposableMaybeObserver<T> observer) {
         return useCase.buildUseCaseObservable(requestValues)
                 .subscribeOn(mWorkerThreadScheduler)
                 .observeOn(mMainThreadScheduler)
