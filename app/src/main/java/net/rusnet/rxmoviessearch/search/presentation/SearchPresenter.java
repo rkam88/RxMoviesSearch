@@ -17,6 +17,7 @@ import java.lang.ref.WeakReference;
 import java.util.List;
 
 import io.reactivex.observers.DisposableCompletableObserver;
+import io.reactivex.observers.DisposableMaybeObserver;
 import io.reactivex.observers.DisposableSingleObserver;
 
 public class SearchPresenter implements SearchContract.Presenter {
@@ -118,7 +119,7 @@ public class SearchPresenter implements SearchContract.Presenter {
         mUseCaseHandler.execute(
                 mLoadFavorites,
                 null,
-                new DisposableSingleObserver<List<Movie>>() {
+                new DisposableMaybeObserver<List<Movie>>() {
                     @Override
                     public void onSuccess(List<Movie> movies) {
                         SearchContract.View view = mSearchViewWeakReference.get();
@@ -130,6 +131,11 @@ public class SearchPresenter implements SearchContract.Presenter {
 
                     @Override
                     public void onError(Throwable e) {
+                        dispose();
+                    }
+
+                    @Override
+                    public void onComplete() {
                         dispose();
                     }
                 }

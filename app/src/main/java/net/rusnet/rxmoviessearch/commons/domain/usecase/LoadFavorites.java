@@ -8,9 +8,9 @@ import net.rusnet.rxmoviessearch.search.domain.model.Movie;
 
 import java.util.List;
 
-import io.reactivex.Single;
+import io.reactivex.Maybe;
 
-public class LoadFavorites extends DBUseCase<Void, Single<List<Movie>>> {
+public class LoadFavorites extends DBUseCase<Void, Maybe<List<Movie>>> {
 
     public LoadFavorites(@NonNull IMoviesLocalDataSource moviesLocalDataSource) {
         super(moviesLocalDataSource);
@@ -18,7 +18,7 @@ public class LoadFavorites extends DBUseCase<Void, Single<List<Movie>>> {
 
     @NonNull
     @Override
-    public Single<List<Movie>> buildUseCaseObservable(@Nullable Void aVoid) {
+    public Maybe<List<Movie>> buildUseCaseObservable(@Nullable Void aVoid) {
         return mMoviesLocalDataSource.getAllMovies();
     }
 

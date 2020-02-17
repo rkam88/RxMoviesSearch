@@ -7,12 +7,12 @@ import net.rusnet.rxmoviessearch.search.domain.model.Movie;
 import java.util.List;
 
 import io.reactivex.Completable;
-import io.reactivex.Single;
+import io.reactivex.Maybe;
 
 public interface IMoviesLocalDataSource {
 
     @NonNull
-    Single<List<Movie>> getAllMovies();
+    Maybe<List<Movie>> getAllMovies();
 
     @NonNull
     Completable addMovie(@NonNull Movie movie);

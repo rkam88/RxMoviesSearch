@@ -6,15 +6,10 @@ import net.rusnet.rxmoviessearch.commons.data.model.RoomMovie;
 import net.rusnet.rxmoviessearch.search.domain.model.Movie;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import io.reactivex.Completable;
-import io.reactivex.CompletableEmitter;
-import io.reactivex.CompletableOnSubscribe;
-import io.reactivex.Single;
-import io.reactivex.SingleEmitter;
-import io.reactivex.SingleOnSubscribe;
+import io.reactivex.Maybe;
 import io.reactivex.functions.Function;
 
 public class MoviesLocalDataSource implements IMoviesLocalDataSource {
@@ -29,27 +24,22 @@ public class MoviesLocalDataSource implements IMoviesLocalDataSource {
 
     @NonNull
     @Override
-    public Single<List<Movie>> getAllMovies() {
-        return Single.create(new SingleOnSubscribe<List<RoomMovie>>() {
-            @Override
-            public void subscribe(SingleEmitter<List<RoomMovie>> emitter) throws Exception {
-                emitter.onSuccess(Arrays.asList(mMovieDao.getAllMovies()));
-            }
-        })
-                .map(new Function<List<RoomMovie>, List<Movie>>() {
-            @Override
-            public List<Movie> apply(List<RoomMovie> roomMovies) throws Exception {
-                List<Movie> movieList = new ArrayList<>();
-                for (RoomMovie roomMovie : roomMovies) {
-                    movieList.add(new Movie(roomMovie.getTitle(),
-                            roomMovie.getYear(),
-                            roomMovie.getPosterURL(),
-                            roomMovie.getImdbID(),
-                            true));
-                }
-                return movieList;
-            }
-        });
+    public Maybe<List<Movie>> getAllMovies() {
+        return mMovieDao.getAllMovies()
+                .map(new Function<RoomMovie[], List<Movie>>() {
+                    @Override
+                    public List<Movie> apply(RoomMovie[] roomMovies) throws Exception {
+                        List<Movie> movieList = new ArrayList<>();
+                        for (RoomMovie roomMovie : roomMovies) {
+                            movieList.add(new Movie(roomMovie.getTitle(),
+                                    roomMovie.getYear(),
+                                    roomMovie.getPosterURL(),
+                                    roomMovie.getImdbID(),
+                                    true));
+                        }
+                        return movieList;
+                    }
+                });
     }
 
     @NonNull

@@ -9,12 +9,13 @@ import androidx.room.Query;
 import net.rusnet.rxmoviessearch.commons.data.model.RoomMovie;
 
 import io.reactivex.Completable;
+import io.reactivex.Maybe;
 
 @Dao
 public interface MovieDao {
 
     @Query("SELECT * FROM movie_table")
-    RoomMovie[] getAllMovies();
+    Maybe<RoomMovie[]> getAllMovies();
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     Completable addMovie(@NonNull RoomMovie movieToAdd);
