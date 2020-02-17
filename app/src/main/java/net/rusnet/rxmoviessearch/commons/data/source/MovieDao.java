@@ -8,6 +8,8 @@ import androidx.room.Query;
 
 import net.rusnet.rxmoviessearch.commons.data.model.RoomMovie;
 
+import io.reactivex.Completable;
+
 @Dao
 public interface MovieDao {
 
@@ -15,9 +17,9 @@ public interface MovieDao {
     RoomMovie[] getAllMovies();
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    void addMovie(RoomMovie movieToAdd);
+    Completable addMovie(@NonNull RoomMovie movieToAdd);
 
     @Query("DELETE FROM movie_table WHERE imdb_id = :imdbId")
-    void deleteMovie(@NonNull String imdbId);
+    Completable deleteMovie(@NonNull String imdbId);
 
 }

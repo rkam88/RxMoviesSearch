@@ -35,7 +35,8 @@ public class MoviesLocalDataSource implements IMoviesLocalDataSource {
             public void subscribe(SingleEmitter<List<RoomMovie>> emitter) throws Exception {
                 emitter.onSuccess(Arrays.asList(mMovieDao.getAllMovies()));
             }
-        }).map(new Function<List<RoomMovie>, List<Movie>>() {
+        })
+                .map(new Function<List<RoomMovie>, List<Movie>>() {
             @Override
             public List<Movie> apply(List<RoomMovie> roomMovies) throws Exception {
                 List<Movie> movieList = new ArrayList<>();
@@ -54,28 +55,16 @@ public class MoviesLocalDataSource implements IMoviesLocalDataSource {
     @NonNull
     @Override
     public Completable addMovie(@NonNull Movie movie) {
-        return Completable.create(new CompletableOnSubscribe() {
-            @Override
-            public void subscribe(CompletableEmitter emitter) throws Exception {
-                mMovieDao.addMovie(new RoomMovie(movie.getTitle(),
-                        movie.getYear(),
-                        movie.getImdbID(),
-                        movie.getPosterURL()));
-                emitter.onComplete();
-            }
-        });
+        return mMovieDao.addMovie(new RoomMovie(movie.getTitle(),
+                movie.getYear(),
+                movie.getImdbID(),
+                movie.getPosterURL()));
     }
 
     @NonNull
     @Override
     public Completable deleteMovie(@NonNull String imdbId) {
-        return Completable.create(new CompletableOnSubscribe() {
-            @Override
-            public void subscribe(CompletableEmitter emitter) throws Exception {
-                mMovieDao.deleteMovie(imdbId);
-                emitter.onComplete();
-            }
-        });
+        return mMovieDao.deleteMovie(imdbId);
     }
 
 }
