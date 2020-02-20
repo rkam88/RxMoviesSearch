@@ -12,16 +12,22 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import io.reactivex.Single;
 import io.reactivex.functions.Function;
 
+@Singleton
 public class MoviesRemoteDataSource implements IMoviesRemoteDataSource {
 
+    public static final String BASE_URL = "http://omdbapi.com/";
     private static final String API_KEY = "3b6ee26";
     private static final String NO_POSTER = "N/A";
     private static final String EMPTY_STRING = "";
     private OmdbApi mOmdbApi;
 
+    @Inject
     public MoviesRemoteDataSource(@NonNull OmdbApi omdbApi) {
         mOmdbApi = omdbApi;
     }

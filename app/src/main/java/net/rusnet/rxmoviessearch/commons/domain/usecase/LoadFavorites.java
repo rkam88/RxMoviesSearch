@@ -8,10 +8,15 @@ import net.rusnet.rxmoviessearch.search.domain.model.Movie;
 
 import java.util.List;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import io.reactivex.Maybe;
 
+@Singleton
 public class LoadFavorites extends DBUseCase<Void, Maybe<List<Movie>>> {
 
+    @Inject
     public LoadFavorites(@NonNull IMoviesLocalDataSource moviesLocalDataSource) {
         super(moviesLocalDataSource);
     }

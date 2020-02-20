@@ -7,10 +7,15 @@ import net.rusnet.rxmoviessearch.commons.domain.usecase.RemoteDataSourceUseCase;
 import net.rusnet.rxmoviessearch.search.data.source.IMoviesRemoteDataSource;
 import net.rusnet.rxmoviessearch.search.domain.model.SearchResult;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import io.reactivex.Single;
 
+@Singleton
 public class PerformSearch extends RemoteDataSourceUseCase<String, Single<SearchResult>> {
 
+    @Inject
     public PerformSearch(@NonNull IMoviesRemoteDataSource moviesRemoteDataSource) {
         super(moviesRemoteDataSource);
     }

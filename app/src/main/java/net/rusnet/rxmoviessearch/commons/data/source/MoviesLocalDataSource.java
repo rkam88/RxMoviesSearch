@@ -8,16 +8,21 @@ import net.rusnet.rxmoviessearch.search.domain.model.Movie;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
 import io.reactivex.functions.Function;
 
+@Singleton
 public class MoviesLocalDataSource implements IMoviesLocalDataSource {
 
     private static final String EMPTY_STRING = "";
 
     private MovieDao mMovieDao;
 
+    @Inject
     public MoviesLocalDataSource(@NonNull MovieDao movieDao) {
         mMovieDao = movieDao;
     }

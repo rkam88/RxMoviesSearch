@@ -12,12 +12,19 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
 import net.rusnet.rxmoviessearch.R;
-import net.rusnet.rxmoviessearch.commons.Injection;
+import net.rusnet.rxmoviessearch.commons.injection.ApplicationComponent;
+import net.rusnet.rxmoviessearch.commons.injection.DaggerApplicationComponent;
+import net.rusnet.rxmoviessearch.commons.injection.LocalDbModule;
+import net.rusnet.rxmoviessearch.commons.injection.NetworkModule;
+import net.rusnet.rxmoviessearch.commons.injection.RxSchedulersModule;
+import net.rusnet.rxmoviessearch.search.data.source.MoviesRemoteDataSource;
 import net.rusnet.rxmoviessearch.search.domain.model.Movie;
 import net.rusnet.rxmoviessearch.search.presentation.SearchActivity;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.inject.Inject;
 
 public class FavoritesActivity extends AppCompatActivity
         implements FavoritesContract.View,
@@ -28,16 +35,27 @@ public class FavoritesActivity extends AppCompatActivity
     private static final String KEY_MOVIE_TO_DELETE_POSITION = "KEY_MOVIE_TO_DELETE_POSITION";
     private static final String KEY_MOVIE_LIST = "KEY_MOVIE_LIST";
     private static final String KEY_ACTIVITY_RESULT_CODE = "KEY_ACTIVITY_RESULT_CODE";
+
+    @Inject
+    FavoritesContract.Presenter mPresenter;
+
     private List<Movie> mMovieList;
     private RecyclerView mRecyclerView;
     private FavoritesMoviesAdapter mAdapter;
-    private FavoritesContract.Presenter mPresenter;
     private FrameLayout mInfoMessage;
     private int mMovieToDeletePosition;
     private int mActivityResultCode;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+        ApplicationComponent applicationComponent = DaggerApplicationComponent
+                .builder()
+                .localDbModule(new LocalDbModule(this))
+                .networkModule(new NetworkModule(MoviesRemoteDataSource.BASE_URL))
+                .rxSchedulersModule(new RxSchedulersModule())
+                .build();
+        applicationComponent.inject(this);
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_favorites);
 
@@ -60,8 +78,6 @@ public class FavoritesActivity extends AppCompatActivity
         mRecyclerView = findViewById(R.id.favorites_recycler_view);
         mAdapter = new FavoritesMoviesAdapter(mMovieList, this);
         mRecyclerView.setAdapter(mAdapter);
-
-        mPresenter = Injection.provideFavoritesPresenter(getApplicationContext());
     }
 
     @Override

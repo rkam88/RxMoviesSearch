@@ -3,6 +3,12 @@ package net.rusnet.rxmoviessearch.commons.domain.usecase;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import net.rusnet.rxmoviessearch.commons.injection.RxSchedulersModule;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
+
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
 import io.reactivex.Observable;
@@ -14,14 +20,16 @@ import io.reactivex.observers.DisposableMaybeObserver;
 import io.reactivex.observers.DisposableObserver;
 import io.reactivex.observers.DisposableSingleObserver;
 
+@Singleton
 public class UseCaseHandler {
 
     private Scheduler mMainThreadScheduler;
     private Scheduler mWorkerThreadScheduler;
 
+    @Inject
     public UseCaseHandler(
-            @NonNull Scheduler mainThreadScheduler,
-            @NonNull Scheduler workerThreadScheduler) {
+            @NonNull @Named(RxSchedulersModule.MAIN_THREAD) Scheduler mainThreadScheduler,
+            @NonNull @Named(RxSchedulersModule.WORKER_THREAD) Scheduler workerThreadScheduler) {
         mMainThreadScheduler = mainThreadScheduler;
         mWorkerThreadScheduler = workerThreadScheduler;
     }

@@ -6,13 +6,18 @@ import net.rusnet.rxmoviessearch.commons.domain.usecase.ChangeMovieFavoriteStatu
 import net.rusnet.rxmoviessearch.commons.domain.usecase.UseCaseHandler;
 import net.rusnet.rxmoviessearch.search.domain.model.Movie;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import io.reactivex.observers.DisposableCompletableObserver;
 
+@Singleton
 public class FavoritesPresenter implements FavoritesContract.Presenter {
 
     private UseCaseHandler mUseCaseHandler;
     private ChangeMovieFavoriteStatus mChangeMovieFavoriteStatus;
 
+    @Inject
     public FavoritesPresenter(
             @NonNull UseCaseHandler useCaseHandler,
             @NonNull ChangeMovieFavoriteStatus changeMovieFavoriteStatus) {

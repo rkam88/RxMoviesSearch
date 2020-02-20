@@ -16,10 +16,14 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.List;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import io.reactivex.observers.DisposableCompletableObserver;
 import io.reactivex.observers.DisposableMaybeObserver;
 import io.reactivex.observers.DisposableSingleObserver;
 
+@Singleton
 public class SearchPresenter implements SearchContract.Presenter {
 
     private WeakReference<SearchContract.View> mSearchViewWeakReference;
@@ -29,6 +33,7 @@ public class SearchPresenter implements SearchContract.Presenter {
     private ChangeMovieFavoriteStatus mChangeMovieFavoriteStatus;
     private LoadFavorites mLoadFavorites;
 
+    @Inject
     public SearchPresenter(
             @NonNull UseCaseHandler useCaseHandler,
             @NonNull PerformSearch performSearch,

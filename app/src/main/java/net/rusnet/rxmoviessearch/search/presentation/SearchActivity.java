@@ -23,12 +23,19 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import net.rusnet.rxmoviessearch.R;
-import net.rusnet.rxmoviessearch.commons.Injection;
+import net.rusnet.rxmoviessearch.commons.injection.ApplicationComponent;
+import net.rusnet.rxmoviessearch.commons.injection.DaggerApplicationComponent;
+import net.rusnet.rxmoviessearch.commons.injection.LocalDbModule;
+import net.rusnet.rxmoviessearch.commons.injection.NetworkModule;
+import net.rusnet.rxmoviessearch.commons.injection.RxSchedulersModule;
 import net.rusnet.rxmoviessearch.favorites.presentation.FavoritesActivity;
+import net.rusnet.rxmoviessearch.search.data.source.MoviesRemoteDataSource;
 import net.rusnet.rxmoviessearch.search.domain.model.Movie;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.inject.Inject;
 
 public class SearchActivity extends AppCompatActivity
         implements SearchContract.View,
@@ -47,7 +54,9 @@ public class SearchActivity extends AppCompatActivity
     private static final int ZERO = 0;
     public static final int MODIFY_FAVORITES_REQUEST_CODE = 1;
 
-    private SearchContract.Presenter mPresenter;
+    @Inject
+    SearchContract.Presenter mPresenter;
+
     private EditText mSearchEditText;
     private ImageButton mSearchButton;
     private RecyclerView mRecyclerView;
@@ -57,6 +66,14 @@ public class SearchActivity extends AppCompatActivity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        ApplicationComponent applicationComponent = DaggerApplicationComponent
+                .builder()
+                .localDbModule(new LocalDbModule(this))
+                .networkModule(new NetworkModule(MoviesRemoteDataSource.BASE_URL))
+                .rxSchedulersModule(new RxSchedulersModule())
+                .build();
+        applicationComponent.inject(this);
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
 
@@ -172,7 +189,6 @@ public class SearchActivity extends AppCompatActivity
     }
 
     private void initPresenter() {
-        mPresenter = Injection.provideSearchPresenter(getApplicationContext());
         mPresenter.setView(this);
     }
 
