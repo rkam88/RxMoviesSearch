@@ -16,16 +16,10 @@ import dagger.Provides;
 @Module(includes = LocalDbModule.LocalDbAbstractModule.class)
 public class LocalDbModule {
 
-    private final Context mApplicationContext;
-
-    public LocalDbModule(Context applicationContext) {
-        mApplicationContext = applicationContext.getApplicationContext();
-    }
-
     @Singleton
     @Provides
-    MoviesDatabase provideMoviesDatabase() {
-        return MoviesDatabase.getDatabase(mApplicationContext);
+    MoviesDatabase provideMoviesDatabase(Context context) {
+        return MoviesDatabase.getDatabase(context.getApplicationContext());
     }
 
     @Singleton

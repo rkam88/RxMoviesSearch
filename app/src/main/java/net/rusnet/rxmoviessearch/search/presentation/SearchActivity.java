@@ -23,13 +23,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import net.rusnet.rxmoviessearch.R;
-import net.rusnet.rxmoviessearch.commons.injection.ApplicationComponent;
-import net.rusnet.rxmoviessearch.commons.injection.DaggerApplicationComponent;
-import net.rusnet.rxmoviessearch.commons.injection.LocalDbModule;
-import net.rusnet.rxmoviessearch.commons.injection.NetworkModule;
-import net.rusnet.rxmoviessearch.commons.injection.RxSchedulersModule;
+import net.rusnet.rxmoviessearch.commons.injection.MyApplication;
 import net.rusnet.rxmoviessearch.favorites.presentation.FavoritesActivity;
-import net.rusnet.rxmoviessearch.search.data.source.MoviesRemoteDataSource;
 import net.rusnet.rxmoviessearch.search.domain.model.Movie;
 
 import java.util.ArrayList;
@@ -66,13 +61,8 @@ public class SearchActivity extends AppCompatActivity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        ApplicationComponent applicationComponent = DaggerApplicationComponent
-                .builder()
-                .localDbModule(new LocalDbModule(this))
-                .networkModule(new NetworkModule(MoviesRemoteDataSource.BASE_URL))
-                .rxSchedulersModule(new RxSchedulersModule())
-                .build();
-        applicationComponent.inject(this);
+        ((MyApplication) getApplicationContext()).getAppComponent().
+                inject(this);
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);

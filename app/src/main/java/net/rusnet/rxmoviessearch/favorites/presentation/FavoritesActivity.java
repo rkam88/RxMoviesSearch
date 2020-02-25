@@ -12,12 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
 import net.rusnet.rxmoviessearch.R;
-import net.rusnet.rxmoviessearch.commons.injection.ApplicationComponent;
-import net.rusnet.rxmoviessearch.commons.injection.DaggerApplicationComponent;
-import net.rusnet.rxmoviessearch.commons.injection.LocalDbModule;
-import net.rusnet.rxmoviessearch.commons.injection.NetworkModule;
-import net.rusnet.rxmoviessearch.commons.injection.RxSchedulersModule;
-import net.rusnet.rxmoviessearch.search.data.source.MoviesRemoteDataSource;
+import net.rusnet.rxmoviessearch.commons.injection.MyApplication;
 import net.rusnet.rxmoviessearch.search.domain.model.Movie;
 import net.rusnet.rxmoviessearch.search.presentation.SearchActivity;
 
@@ -48,13 +43,8 @@ public class FavoritesActivity extends AppCompatActivity
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
-        ApplicationComponent applicationComponent = DaggerApplicationComponent
-                .builder()
-                .localDbModule(new LocalDbModule(this))
-                .networkModule(new NetworkModule(MoviesRemoteDataSource.BASE_URL))
-                .rxSchedulersModule(new RxSchedulersModule())
-                .build();
-        applicationComponent.inject(this);
+        ((MyApplication) getApplicationContext()).getAppComponent().
+                inject(this);
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_favorites);
