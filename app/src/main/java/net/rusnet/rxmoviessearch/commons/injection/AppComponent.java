@@ -10,11 +10,8 @@ import dagger.Component;
 @Singleton
 @Component(modules = {
         AppModule.class,
-        LocalDbModule.class,
-        NetworkModule.class,
-        RxSchedulersModule.class,
         SearchModule.class,
-        FavoritesModule.class
+        FavoritesModule.class,
 })
 public interface AppComponent {
 

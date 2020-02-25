@@ -3,7 +3,7 @@ package net.rusnet.rxmoviessearch.commons.domain.usecase;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import net.rusnet.rxmoviessearch.commons.injection.RxSchedulersModule;
+import net.rusnet.rxmoviessearch.commons.injection.AppModule;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -28,8 +28,8 @@ public class UseCaseHandler {
 
     @Inject
     public UseCaseHandler(
-            @NonNull @Named(RxSchedulersModule.MAIN_THREAD) Scheduler mainThreadScheduler,
-            @NonNull @Named(RxSchedulersModule.WORKER_THREAD) Scheduler workerThreadScheduler) {
+            @NonNull @Named(AppModule.MAIN_THREAD) Scheduler mainThreadScheduler,
+            @NonNull @Named(AppModule.WORKER_THREAD) Scheduler workerThreadScheduler) {
         mMainThreadScheduler = mainThreadScheduler;
         mWorkerThreadScheduler = workerThreadScheduler;
     }

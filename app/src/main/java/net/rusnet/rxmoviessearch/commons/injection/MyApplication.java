@@ -13,9 +13,7 @@ public class MyApplication extends Application {
         super.onCreate();
         mAppComponent = DaggerAppComponent.builder()
                 .appModule(new AppModule(getApplicationContext()))
-                .localDbModule(new LocalDbModule())
-                .networkModule(new NetworkModule(MoviesRemoteDataSource.BASE_URL))
-                .rxSchedulersModule(new RxSchedulersModule())
+                .searchModule(new SearchModule(MoviesRemoteDataSource.BASE_URL))
                 .build();
     }
 
